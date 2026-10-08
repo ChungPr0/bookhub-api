@@ -10,7 +10,7 @@ public class ValidationException extends AppException {
 
     private static final long serialVersionUID = 1L;
 
-    private final List<FieldErrorItem> errors;
+    private final transient List<FieldErrorItem> errors;
 
     public ValidationException(List<FieldErrorItem> errors) {
         super(ErrorCode.VALIDATION_FAILED);

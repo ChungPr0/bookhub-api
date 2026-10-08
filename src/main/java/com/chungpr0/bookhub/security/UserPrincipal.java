@@ -24,7 +24,7 @@ public class UserPrincipal implements UserDetails {
     private final Role role;
     private final AccountStatus status;
     private final int tokenVersion;
-    private final Collection<? extends GrantedAuthority> authorities;
+    private final transient Collection<? extends GrantedAuthority> authorities;
 
     public static UserPrincipal create(Long accountId, String username, Role role, AccountStatus status, int tokenVersion) {
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));

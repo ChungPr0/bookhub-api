@@ -1,4 +1,4 @@
-package com.chungpr0.bookhub.modules.auth.service;
+package com.chungpr0.bookhub.modules.auth.service.impl;
 
 import com.chungpr0.bookhub.common.enums.OtpPurpose;
 import com.chungpr0.bookhub.common.exception.AppException;
@@ -9,6 +9,8 @@ import com.chungpr0.bookhub.common.util.MaskingUtils;
 import com.chungpr0.bookhub.modules.auth.dto.response.OtpResponse;
 import com.chungpr0.bookhub.modules.auth.entity.Otp;
 import com.chungpr0.bookhub.modules.auth.repository.OtpRepository;
+import com.chungpr0.bookhub.modules.auth.service.OtpService;
+import com.chungpr0.bookhub.modules.auth.service.SmsService;
 import com.chungpr0.bookhub.security.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -124,3 +126,4 @@ public class OtpServiceImpl implements OtpService {
         otpRepository.save(otp);
     }
 }
+

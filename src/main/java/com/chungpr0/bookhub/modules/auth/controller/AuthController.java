@@ -27,6 +27,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,7 +49,8 @@ public class AuthController {
      */
     @Operation(
             summary = "AUTH-01: Yêu cầu gửi OTP đăng ký",
-            description = "Gửi mã xác thực OTP 6 chữ số qua SMS để xác nhận đăng ký số điện thoại. Giới hạn tối đa 5 lần/ngày và giãn cách tối thiểu 60s."
+            description = "Gửi mã xác thực OTP 6 chữ số qua SMS để xác nhận đăng ký số điện thoại. Giới hạn tối đa 5 lần/ngày và giãn cách tối thiểu 60s.",
+            security = {}
     )
     @PostMapping("/register/otp")
     public ResponseEntity<ApiResponse<OtpResponse>> requestRegisterOtp(
@@ -62,7 +64,8 @@ public class AuthController {
      */
     @Operation(
             summary = "AUTH-02: Xác thực OTP & hoàn tất đăng ký",
-            description = "Xác thực mã OTP và hoàn tất tạo tài khoản Khách hàng cùng một giỏ hàng trống trong một giao dịch cơ sở dữ liệu."
+            description = "Xác thực mã OTP và hoàn tất tạo tài khoản Khách hàng cùng một giỏ hàng trống trong một giao dịch cơ sở dữ liệu.",
+            security = {}
     )
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> register(
@@ -77,7 +80,8 @@ public class AuthController {
      */
     @Operation(
             summary = "AUTH-03: Đăng nhập hệ thống",
-            description = "Xác thực tài khoản và mật khẩu, cấp Access Token (JWT 30 phút) và Refresh Token (7 ngày). Tự động khóa tạm thời 15 phút nếu nhập sai quá 5 lần liên tiếp."
+            description = "Xác thực tài khoản và mật khẩu, cấp Access Token (JWT 30 phút) và Refresh Token (7 ngày). Tự động khóa tạm thời 15 phút nếu nhập sai quá 5 lần liên tiếp.",
+            security = {}
     )
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
@@ -94,7 +98,8 @@ public class AuthController {
      */
     @Operation(
             summary = "AUTH-04: Cấp lại Access Token (Token Rotation)",
-            description = "Sử dụng Refresh Token để cấp cặp Access Token và Refresh Token mới. Thu hồi toàn bộ token family nếu phát hiện token bị tái sử dụng trái phép."
+            description = "Sử dụng Refresh Token để cấp cặp Access Token và Refresh Token mới. Thu hồi toàn bộ token family nếu phát hiện token bị tái sử dụng trái phép.",
+            security = {}
     )
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<RefreshTokenResponse>> refreshToken(
@@ -115,6 +120,7 @@ public class AuthController {
             security = @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
     )
     @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> logout(
             @Valid @RequestBody LogoutRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
@@ -131,6 +137,7 @@ public class AuthController {
             security = @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
     )
     @PostMapping("/logout-all")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> logoutAll(
             @AuthenticationPrincipal UserPrincipal principal) {
         authService.logoutAll(principal.getAccountId());
@@ -146,6 +153,7 @@ public class AuthController {
             security = @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
     )
     @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<UserInfoResponse>> getCurrentUser(
             @AuthenticationPrincipal UserPrincipal principal) {
         UserInfoResponse response = authService.getCurrentUser(principal.getAccountId());
@@ -161,6 +169,7 @@ public class AuthController {
             security = @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
     )
     @PutMapping("/password")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<RefreshTokenResponse>> changePassword(
             @Valid @RequestBody ChangePasswordRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
@@ -173,7 +182,8 @@ public class AuthController {
      */
     @Operation(
             summary = "AUTH-09: Quên mật khẩu - Yêu cầu gửi OTP",
-            description = "Gửi OTP khôi phục mật khẩu. Chống tấn công User Enumeration: luôn trả về HTTP 200 mô phỏng thành công kể cả khi số điện thoại chưa tồn tại trong hệ thống."
+            description = "Gửi OTP khôi phục mật khẩu. Chống tấn công User Enumeration: luôn trả về HTTP 200 mô phỏng thành công kể cả khi số điện thoại chưa tồn tại trong hệ thống.",
+            security = {}
     )
     @PostMapping("/password/forgot/otp")
     public ResponseEntity<ApiResponse<OtpResponse>> requestForgotPasswordOtp(
@@ -187,7 +197,8 @@ public class AuthController {
      */
     @Operation(
             summary = "AUTH-10: Quên mật khẩu - Xác thực OTP",
-            description = "Kiểm tra mã OTP khôi phục mật khẩu. Nếu hợp lệ, hệ thống cấp một resetToken một lần có hiệu lực trong 10 phút."
+            description = "Kiểm tra mã OTP khôi phục mật khẩu. Nếu hợp lệ, hệ thống cấp một resetToken một lần có hiệu lực trong 10 phút.",
+            security = {}
     )
     @PostMapping("/password/forgot/verify")
     public ResponseEntity<ApiResponse<ResetTokenResponse>> verifyForgotPasswordOtp(
@@ -201,7 +212,8 @@ public class AuthController {
      */
     @Operation(
             summary = "AUTH-11: Quên mật khẩu - Đặt lại mật khẩu mới",
-            description = "Sử dụng resetToken một lần để đặt mật khẩu mới, hủy token và tăng token_version để vô hiệu hóa toàn bộ phiên cũ."
+            description = "Sử dụng resetToken một lần để đặt mật khẩu mới, hủy token và tăng token_version để vô hiệu hóa toàn bộ phiên cũ.",
+            security = {}
     )
     @PostMapping("/password/forgot/reset")
     public ResponseEntity<ApiResponse<Void>> resetForgotPassword(
@@ -218,4 +230,3 @@ public class AuthController {
         return xfHeader.split(",")[0].trim();
     }
 }
-

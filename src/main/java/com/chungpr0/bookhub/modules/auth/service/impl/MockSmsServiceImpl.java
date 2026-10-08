@@ -1,6 +1,7 @@
-package com.chungpr0.bookhub.modules.auth.service;
+package com.chungpr0.bookhub.modules.auth.service.impl;
 
 import com.chungpr0.bookhub.common.enums.OtpPurpose;
+import com.chungpr0.bookhub.modules.auth.service.SmsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

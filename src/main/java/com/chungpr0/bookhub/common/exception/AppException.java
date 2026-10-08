@@ -8,7 +8,7 @@ public class AppException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     private final ErrorCode errorCode;
-    private final Object details;
+    private final transient Object details;
     private final Long retryAfterSeconds;
 
     public AppException(ErrorCode errorCode) {

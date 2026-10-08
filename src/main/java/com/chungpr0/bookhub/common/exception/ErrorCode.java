@@ -48,7 +48,12 @@ public enum ErrorCode {
     PASSWORD_REUSED(HttpStatus.UNPROCESSABLE_CONTENT, "PASSWORD_REUSED", "Mật khẩu mới không được trùng với mật khẩu hiện tại"),
     RESET_TOKEN_INVALID(HttpStatus.UNPROCESSABLE_CONTENT, "RESET_TOKEN_INVALID", "Mã xác nhận đặt lại mật khẩu không hợp lệ"),
     RESET_TOKEN_EXPIRED(HttpStatus.GONE, "RESET_TOKEN_EXPIRED", "Phiên đặt lại mật khẩu đã hết hạn, vui lòng thao tác lại từ đầu"),
-    SMS_PROVIDER_ERROR(HttpStatus.BAD_GATEWAY, "SMS_PROVIDER_ERROR", "Hệ thống gửi tin nhắn tạm thời gián đoạn, vui lòng thử lại sau");
+    SMS_PROVIDER_ERROR(HttpStatus.BAD_GATEWAY, "SMS_PROVIDER_ERROR", "Hệ thống gửi tin nhắn tạm thời gián đoạn, vui lòng thử lại sau"),
+
+    // MODULE 02 - CUSTOMER & ADDRESS
+    CUSTOMER_NOT_FOUND(HttpStatus.NOT_FOUND, "CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng"),
+    ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "ADDRESS_NOT_FOUND", "Không tìm thấy địa chỉ giao hàng"),
+    ADDRESS_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "ADDRESS_LIMIT_EXCEEDED", "Bạn chỉ có thể lưu tối đa 10 địa chỉ giao hàng");
 
     private final HttpStatus httpStatus;
     private final String code;
