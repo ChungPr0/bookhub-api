@@ -48,6 +48,14 @@ public class ApiResponse<T> {
         return ok(message, null);
     }
 
+    public static <T> ApiResponse<T> success(String message, T data) {
+        return ok(message, data);
+    }
+
+    public static <T> ApiResponse<T> success(T data) {
+        return ok("Thao tác thành công", data);
+    }
+
     public static <T> ApiResponse<T> created(String message, T data) {
         return ApiResponse.<T>builder()
                 .success(true)
@@ -57,6 +65,10 @@ public class ApiResponse<T> {
                 .data(data)
                 .timestamp(OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")))
                 .build();
+    }
+
+    public static <T> ApiResponse<T> created(T data) {
+        return created("Tạo mới thành công", data);
     }
 }
 

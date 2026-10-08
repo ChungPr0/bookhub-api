@@ -40,5 +40,22 @@ public final class MaskingUtils {
         }
         return value;
     }
+
+    public static String maskName(String fullName) {
+        if (fullName == null || fullName.isBlank()) {
+            return "Khách hàng";
+        }
+        String[] parts = fullName.trim().split("\\s+");
+        if (parts.length <= 1) {
+            return parts[0];
+        }
+        StringBuilder masked = new StringBuilder(parts[0]);
+        for (int i = 1; i < parts.length; i++) {
+            if (!parts[i].isEmpty()) {
+                masked.append(" ").append(Character.toUpperCase(parts[i].charAt(0))).append(".");
+            }
+        }
+        return masked.toString();
+    }
 }
 

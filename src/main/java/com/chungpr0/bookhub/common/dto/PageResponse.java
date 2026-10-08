@@ -33,5 +33,12 @@ public class PageResponse<T> {
                         .build())
                 .build();
     }
+
+    public static <T> PageResponse<T> of(List<T> items, PageMeta page) {
+        return PageResponse.<T>builder()
+                .items(items)
+                .page(page)
+                .build();
+    }
 }
 

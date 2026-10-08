@@ -46,6 +46,10 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    public String generateAccessToken(com.chungpr0.bookhub.modules.auth.entity.Account account) {
+        return generateAccessToken(account.getId(), account.getRole(), account.getTokenVersion());
+    }
+
     public Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey)

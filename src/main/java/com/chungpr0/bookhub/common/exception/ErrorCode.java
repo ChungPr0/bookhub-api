@@ -53,7 +53,13 @@ public enum ErrorCode {
     // MODULE 02 - CUSTOMER & ADDRESS
     CUSTOMER_NOT_FOUND(HttpStatus.NOT_FOUND, "CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng"),
     ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "ADDRESS_NOT_FOUND", "Không tìm thấy địa chỉ giao hàng"),
-    ADDRESS_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "ADDRESS_LIMIT_EXCEEDED", "Bạn chỉ có thể lưu tối đa 10 địa chỉ giao hàng");
+    ADDRESS_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "ADDRESS_LIMIT_EXCEEDED", "Bạn chỉ có thể lưu tối đa 10 địa chỉ giao hàng"),
+
+    // MODULE 03 - CATALOG
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY_NOT_FOUND", "Không tìm thấy danh mục yêu cầu"),
+    BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "BOOK_NOT_FOUND", "Không tìm thấy cuốn sách yêu cầu"),
+    AUTHOR_NOT_FOUND(HttpStatus.NOT_FOUND, "AUTHOR_NOT_FOUND", "Không tìm thấy tác giả yêu cầu"),
+    PUBLISHER_NOT_FOUND(HttpStatus.NOT_FOUND, "PUBLISHER_NOT_FOUND", "Không tìm thấy nhà xuất bản yêu cầu");
 
     private final HttpStatus httpStatus;
     private final String code;
