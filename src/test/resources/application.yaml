@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: bookhub-api-test
+
+  datasource:
+    url: jdbc:h2:mem:bookhub_test;DB_CLOSE_DELAY=-1;MODE=MySQL;NON_KEYWORDS=USER
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+bookhub:
+  jwt:
+    secret: 4c696e685f6368756e675f626f6f6b6875625f7365637265745f6b65795f3235365f626974735f6d696e696d756d5f73697a6521
+    access-token-expiration-seconds: 1800
+    refresh-token-expiration-seconds: 604800
+    reset-token-expiration-seconds: 600
+    otp-expiration-seconds: 300
+    otp-resend-interval-seconds: 60
+    otp-daily-limit: 5
+    otp-max-attempts: 5
+    login-max-attempts: 5
+    login-lock-duration-seconds: 900
+

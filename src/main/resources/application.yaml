@@ -1,3 +1,35 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: bookhub-api
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/bookhub?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Ho_Chi_Minh}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: false
+    properties:
+      hibernate:
+        '[format_sql]': false
+        dialect: org.hibernate.dialect.MySQLDialect
+
+bookhub:
+  jwt:
+    secret: ${JWT_SECRET:4c696e685f6368756e675f626f6f6b6875625f7365637265745f6b65795f3235365f626974735f6d696e696d756d5f73697a6521}
+    access-token-expiration-seconds: 1800
+    refresh-token-expiration-seconds: 604800
+    reset-token-expiration-seconds: 600
+    otp-expiration-seconds: 300
+    otp-resend-interval-seconds: 60
+    otp-daily-limit: 5
+    otp-max-attempts: 5
+    login-max-attempts: 5
+    login-lock-duration-seconds: 900
