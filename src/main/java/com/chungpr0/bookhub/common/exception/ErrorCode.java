@@ -59,7 +59,15 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CATEGORY_NOT_FOUND", "Không tìm thấy danh mục yêu cầu"),
     BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "BOOK_NOT_FOUND", "Không tìm thấy cuốn sách yêu cầu"),
     AUTHOR_NOT_FOUND(HttpStatus.NOT_FOUND, "AUTHOR_NOT_FOUND", "Không tìm thấy tác giả yêu cầu"),
-    PUBLISHER_NOT_FOUND(HttpStatus.NOT_FOUND, "PUBLISHER_NOT_FOUND", "Không tìm thấy nhà xuất bản yêu cầu");
+    PUBLISHER_NOT_FOUND(HttpStatus.NOT_FOUND, "PUBLISHER_NOT_FOUND", "Không tìm thấy nhà xuất bản yêu cầu"),
+
+    // MODULE 04 - CART & WISHLIST
+    CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "CART_ITEM_NOT_FOUND", "Sản phẩm không có trong giỏ hàng"),
+    BOOK_NOT_AVAILABLE(HttpStatus.UNPROCESSABLE_CONTENT, "BOOK_NOT_AVAILABLE", "Cuốn sách này hiện đã ngừng kinh doanh"),
+    OUT_OF_STOCK(HttpStatus.UNPROCESSABLE_CONTENT, "OUT_OF_STOCK", "Cuốn sách này hiện đã hết hàng"),
+    INSUFFICIENT_STOCK(HttpStatus.UNPROCESSABLE_CONTENT, "INSUFFICIENT_STOCK", "Số lượng yêu cầu vượt quá tồn kho khả dụng"),
+    CART_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "CART_LIMIT_EXCEEDED", "Giỏ hàng đã đạt giới hạn tối đa 50 đầu sách khác nhau"),
+    WISHLIST_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "WISHLIST_LIMIT_EXCEEDED", "Danh sách yêu thích đã đạt giới hạn tối đa 200 cuốn sách");
 
     private final HttpStatus httpStatus;
     private final String code;
