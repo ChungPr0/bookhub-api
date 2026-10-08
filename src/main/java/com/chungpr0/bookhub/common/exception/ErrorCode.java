@@ -67,7 +67,29 @@ public enum ErrorCode {
     OUT_OF_STOCK(HttpStatus.UNPROCESSABLE_CONTENT, "OUT_OF_STOCK", "Cuốn sách này hiện đã hết hàng"),
     INSUFFICIENT_STOCK(HttpStatus.UNPROCESSABLE_CONTENT, "INSUFFICIENT_STOCK", "Số lượng yêu cầu vượt quá tồn kho khả dụng"),
     CART_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "CART_LIMIT_EXCEEDED", "Giỏ hàng đã đạt giới hạn tối đa 50 đầu sách khác nhau"),
-    WISHLIST_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "WISHLIST_LIMIT_EXCEEDED", "Danh sách yêu thích đã đạt giới hạn tối đa 200 cuốn sách");
+    WISHLIST_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "WISHLIST_LIMIT_EXCEEDED", "Danh sách yêu thích đã đạt giới hạn tối đa 200 cuốn sách"),
+
+    // MODULE 05 - ORDER, CHECKOUT, PAYMENT & SHIPPING
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", "Không tìm thấy đơn hàng yêu cầu"),
+    VOUCHER_NOT_FOUND(HttpStatus.NOT_FOUND, "VOUCHER_NOT_FOUND", "Không tìm thấy mã giảm giá yêu cầu"),
+    VOUCHER_ALREADY_USED(HttpStatus.CONFLICT, "VOUCHER_ALREADY_USED", "Không thể sửa đổi hoặc xóa mã giảm giá đã phát sinh giao dịch"),
+    PRICE_CHANGED(HttpStatus.CONFLICT, "PRICE_CHANGED", "Giá trị đơn hàng đã có sự thay đổi so với lúc xem trước. Vui lòng xác nhận lại"),
+    ORDER_ALREADY_PAID(HttpStatus.CONFLICT, "ORDER_ALREADY_PAID", "Đơn hàng đã được thanh toán từ trước"),
+    ORDER_CANNOT_BE_CANCELLED(HttpStatus.CONFLICT, "ORDER_CANNOT_BE_CANCELLED", "Đơn hàng không ở trạng thái cho phép hủy"),
+    INVALID_ORDER_STATUS_TRANSITION(HttpStatus.CONFLICT, "INVALID_ORDER_STATUS_TRANSITION", "Chuyển trạng thái đơn hàng không hợp lệ"),
+    CART_EMPTY(HttpStatus.UNPROCESSABLE_CONTENT, "CART_EMPTY", "Vui lòng chọn ít nhất một cuốn sách để thanh toán"),
+    ITEMS_NOT_IN_CART(HttpStatus.UNPROCESSABLE_CONTENT, "ITEMS_NOT_IN_CART", "Một số sản phẩm không tồn tại trong giỏ hàng của bạn"),
+    VOUCHER_USAGE_LIMIT_REACHED(HttpStatus.UNPROCESSABLE_CONTENT, "VOUCHER_USAGE_LIMIT_REACHED", "Mã giảm giá đã hết lượt sử dụng"),
+    VOUCHER_MIN_ORDER_NOT_MET(HttpStatus.UNPROCESSABLE_CONTENT, "VOUCHER_MIN_ORDER_NOT_MET", "Đơn hàng chưa đạt giá trị tối thiểu của mã giảm giá"),
+    VOUCHER_EXPIRED(HttpStatus.UNPROCESSABLE_CONTENT, "VOUCHER_EXPIRED", "Mã giảm giá đã hết hạn sử dụng"),
+    VOUCHER_NOT_YET_VALID(HttpStatus.UNPROCESSABLE_CONTENT, "VOUCHER_NOT_YET_VALID", "Mã giảm giá chưa đến thời gian áp dụng"),
+    INSUFFICIENT_POINTS(HttpStatus.UNPROCESSABLE_CONTENT, "INSUFFICIENT_POINTS", "Số dư điểm tích lũy không đủ để thực hiện giao dịch"),
+    PAYMENT_EXPIRED(HttpStatus.UNPROCESSABLE_CONTENT, "PAYMENT_EXPIRED", "Đã quá thời hạn thanh toán đơn hàng online"),
+    RETURN_WINDOW_EXPIRED(HttpStatus.UNPROCESSABLE_CONTENT, "RETURN_WINDOW_EXPIRED", "Đã quá thời hạn 7 ngày cho phép hoàn trả đơn hàng"),
+    REFUND_NOT_APPLICABLE(HttpStatus.UNPROCESSABLE_CONTENT, "REFUND_NOT_APPLICABLE", "Đơn hàng không ở trạng thái chờ hoàn tiền"),
+    LAST_PAYMENT_METHOD_PROTECTION(HttpStatus.UNPROCESSABLE_CONTENT, "LAST_PAYMENT_METHOD_PROTECTION", "Không thể vô hiệu hóa phương thức thanh toán đang hoạt động duy nhất"),
+    SHIPPING_REGION_UNSUPPORTED(HttpStatus.UNPROCESSABLE_CONTENT, "SHIPPING_REGION_UNSUPPORTED", "Dịch vụ giao hàng không hỗ trợ địa bàn đã chọn"),
+    PAYMENT_GATEWAY_ERROR(HttpStatus.BAD_GATEWAY, "PAYMENT_GATEWAY_ERROR", "Cổng thanh toán trực tuyến gặp sự cố");
 
     private final HttpStatus httpStatus;
     private final String code;
