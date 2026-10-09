@@ -1,6 +1,7 @@
 package com.chungpr0.bookhub.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,23 +15,30 @@ import java.time.ZoneId;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Phong bì phản hồi API chuẩn hóa toàn hệ thống")
 public class ApiResponse<T> {
 
     @Builder.Default
+    @Schema(description = "Cờ trạng thái thành công của yêu cầu", example = "true")
     private boolean success = true;
 
     @Builder.Default
+    @Schema(description = "Mã trạng thái HTTP", example = "200")
     private int status = 200;
 
     @Builder.Default
+    @Schema(description = "Mã kết quả hoặc mã định danh nghiệp vụ", example = "SUCCESS")
     private String code = "SUCCESS";
 
+    @Schema(description = "Thông điệp phản hồi thân thiện với người dùng", example = "Thao tác thành công")
     private String message;
 
+    @Schema(description = "Dữ liệu phản hồi thực tế (payload)")
     private T data;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     @Builder.Default
+    @Schema(description = "Thời điểm phản hồi theo chuẩn ISO-8601 (múi giờ +07:00)", example = "2026-10-09T17:00:00+07:00")
     private OffsetDateTime timestamp = OffsetDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
 
     public static <T> ApiResponse<T> ok(String message, T data) {
@@ -71,4 +79,3 @@ public class ApiResponse<T> {
         return created("Tạo mới thành công", data);
     }
 }
-

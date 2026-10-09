@@ -1,6 +1,5 @@
 package com.chungpr0.bookhub.modules.order.service.impl;
 
-import com.chungpr0.bookhub.common.dto.PageMeta;
 import com.chungpr0.bookhub.common.dto.PageResponse;
 import com.chungpr0.bookhub.common.enums.CustomerTier;
 import com.chungpr0.bookhub.common.enums.PointTransactionType;
@@ -96,20 +95,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 pageable
         );
 
-        List<AdminOrderSummaryResponse> items = page.getContent().stream()
-                .map(orderMapper::toAdminOrderSummaryResponse)
-                .toList();
-
-        PageMeta meta = PageMeta.builder()
-                .number(page.getNumber())
-                .size(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .build();
-
-        return PageResponse.of(items, meta);
+        return PageResponse.of(page, orderMapper::toAdminOrderSummaryResponse);
     }
 
     @Override

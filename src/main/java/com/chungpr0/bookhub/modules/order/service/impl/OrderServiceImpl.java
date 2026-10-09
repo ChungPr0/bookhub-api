@@ -1,6 +1,5 @@
 package com.chungpr0.bookhub.modules.order.service.impl;
 
-import com.chungpr0.bookhub.common.dto.PageMeta;
 import com.chungpr0.bookhub.common.dto.PageResponse;
 import com.chungpr0.bookhub.common.enums.BookStatus;
 import com.chungpr0.bookhub.common.enums.CartItemAvailability;
@@ -523,20 +522,7 @@ public class OrderServiceImpl implements OrderService {
                 pageable
         );
 
-        List<CustomerOrderSummaryResponse> items = page.getContent().stream()
-                .map(orderMapper::toCustomerOrderSummaryResponse)
-                .toList();
-
-        PageMeta meta = PageMeta.builder()
-                .number(page.getNumber())
-                .size(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .build();
-
-        return PageResponse.of(items, meta);
+        return PageResponse.of(page, orderMapper::toCustomerOrderSummaryResponse);
     }
 
     @Override

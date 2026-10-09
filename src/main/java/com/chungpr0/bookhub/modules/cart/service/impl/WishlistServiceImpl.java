@@ -1,6 +1,5 @@
 package com.chungpr0.bookhub.modules.cart.service.impl;
 
-import com.chungpr0.bookhub.common.dto.PageMeta;
 import com.chungpr0.bookhub.common.dto.PageResponse;
 import com.chungpr0.bookhub.common.exception.AppException;
 import com.chungpr0.bookhub.common.exception.ErrorCode;
@@ -26,7 +25,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Slf4j
 @Service
@@ -48,20 +46,7 @@ public class WishlistServiceImpl implements WishlistService {
         Specification<Wishlist> spec = WishlistSpecification.filter(customer.getId(), filter);
         Page<Wishlist> page = wishlistRepository.findAll(spec, pageable);
 
-        List<WishlistItemResponse> items = page.getContent().stream()
-                .map(cartMapper::toWishlistItemResponse)
-                .toList();
-
-        PageMeta meta = PageMeta.builder()
-                .number(page.getNumber())
-                .size(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .build();
-
-        return PageResponse.of(items, meta);
+        return PageResponse.of(page, cartMapper::toWishlistItemResponse);
     }
 
     @Override

@@ -6,6 +6,9 @@ import com.chungpr0.bookhub.common.enums.CoverType;
 import com.chungpr0.bookhub.common.enums.Role;
 import com.chungpr0.bookhub.modules.auth.entity.Account;
 import com.chungpr0.bookhub.modules.auth.repository.AccountRepository;
+import com.chungpr0.bookhub.modules.catalog.dto.request.CreateBookRequest;
+import com.chungpr0.bookhub.modules.catalog.dto.request.UpdateBookRequest;
+import com.chungpr0.bookhub.modules.catalog.dto.request.UpdateBookStatusRequest;
 import com.chungpr0.bookhub.modules.catalog.entity.Author;
 import com.chungpr0.bookhub.modules.catalog.entity.Book;
 import com.chungpr0.bookhub.modules.catalog.entity.Category;
@@ -14,9 +17,14 @@ import com.chungpr0.bookhub.modules.catalog.repository.AuthorRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.BookRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.CategoryRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.PublisherRepository;
+import com.chungpr0.bookhub.modules.cart.repository.CartItemRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.ReviewRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.WishlistRepository;
+import com.chungpr0.bookhub.modules.order.repository.OrderDetailRepository;
+import com.chungpr0.bookhub.modules.order.repository.OrderRepository;
 import com.chungpr0.bookhub.security.JwtTokenProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +40,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,6 +58,15 @@ class AdminBookControllerTest {
 
     @Autowired
     private BookRepository bookRepository;
+
+    @Autowired(required = false)
+    private OrderDetailRepository orderDetailRepository;
+
+    @Autowired(required = false)
+    private OrderRepository orderRepository;
+
+    @Autowired(required = false)
+    private CartItemRepository cartItemRepository;
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -71,9 +92,15 @@ class AdminBookControllerTest {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private String customerToken;
     private String adminToken;
     private Book savedBook;
+    private Category category;
+    private Author author;
+    private Publisher publisher;
 
     @BeforeEach
     void setUp() {
@@ -82,12 +109,7 @@ class AdminBookControllerTest {
                 .apply(springSecurity())
                 .build();
 
-        reviewRepository.deleteAll();
-        wishlistRepository.deleteAll();
-        bookRepository.deleteAll();
-        categoryRepository.deleteAll();
-        authorRepository.deleteAll();
-        publisherRepository.deleteAll();
+        cleanDatabase();
 
         // Customer account
         Account customerAccount = accountRepository.findByUsername("0911111111").orElseGet(() -> {
@@ -115,17 +137,17 @@ class AdminBookControllerTest {
         });
         adminToken = jwtTokenProvider.generateAccessToken(adminAccount);
 
-        Category category = categoryRepository.save(Category.builder()
+        category = categoryRepository.save(Category.builder()
                 .name("Kinh tế")
                 .slug("kinh-te")
                 .build());
 
-        Author author = authorRepository.save(Author.builder()
+        author = authorRepository.save(Author.builder()
                 .name("Tác giả A")
                 .slug("tac-gia-a")
                 .build());
 
-        Publisher publisher = publisherRepository.save(Publisher.builder()
+        publisher = publisherRepository.save(Publisher.builder()
                 .name("NXB Trẻ")
                 .slug("nxb-tre")
                 .build());
@@ -143,6 +165,7 @@ class AdminBookControllerTest {
                 .status(BookStatus.ACTIVE)
                 .coverType(CoverType.PAPERBACK)
                 .language("VI")
+                .version(1)
                 .images(new ArrayList<>())
                 .build());
     }
@@ -204,5 +227,146 @@ class AdminBookControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value("BOOK_NOT_FOUND"));
     }
-}
 
+    @Test
+    @DisplayName("POST /api/v1/admin/books - 400 BAD_REQUEST khi tiêu đề để trống")
+    void testCreateBook_ValidationBlankTitle() throws Exception {
+        CreateBookRequest request = CreateBookRequest.builder()
+                .title("")
+                .build();
+
+        mockMvc.perform(post("/api/v1/admin/books")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/admin/books - 201 CREATED thêm mới sách thành công")
+    void testCreateBook_Success() throws Exception {
+        CreateBookRequest request = CreateBookRequest.builder()
+                .title("Kinh Tế Vĩ Mô 2026")
+                .categoryId(category.getId())
+                .publisherId(publisher.getId())
+                .authorIds(List.of(author.getId()))
+                .originalPrice(150000L)
+                .salePrice(120000L)
+                .lowStockThreshold(5)
+                .coverType(CoverType.PAPERBACK)
+                .language("VI")
+                .images(List.of("https://cdn.bookhub.vn/books/macro-econ.webp"))
+                .build();
+
+        mockMvc.perform(post("/api/v1/admin/books")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.title").value("Kinh Tế Vĩ Mô 2026"))
+                .andExpect(jsonPath("$.data.stockQuantity").value(0));
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/admin/books/{id} - 409 CONFLICT khi phiên bản (version) không khớp")
+    void testUpdateBook_ConcurrentModification() throws Exception {
+        UpdateBookRequest request = UpdateBookRequest.builder()
+                .title("Kinh tế học cơ bản - Tái bản")
+                .categoryId(category.getId())
+                .publisherId(publisher.getId())
+                .authorIds(List.of(author.getId()))
+                .originalPrice(130000L)
+                .salePrice(110000L)
+                .lowStockThreshold(5)
+                .coverType(CoverType.PAPERBACK)
+                .language("VI")
+                .version(99) // Stale version
+                .images(List.of("https://cdn.bookhub.vn/books/cover.webp"))
+                .build();
+
+        mockMvc.perform(put("/api/v1/admin/books/" + savedBook.getId())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("CONCURRENT_MODIFICATION"));
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/admin/books/{id} - 200 OK cập nhật sách thành công khi version khớp")
+    void testUpdateBook_Success() throws Exception {
+        UpdateBookRequest request = UpdateBookRequest.builder()
+                .title("Kinh tế học cơ bản - Bản mới")
+                .categoryId(category.getId())
+                .publisherId(publisher.getId())
+                .authorIds(List.of(author.getId()))
+                .originalPrice(140000L)
+                .salePrice(115000L)
+                .lowStockThreshold(5)
+                .coverType(CoverType.PAPERBACK)
+                .language("VI")
+                .version(1)
+                .images(List.of("https://cdn.bookhub.vn/books/cover2.webp"))
+                .build();
+
+        mockMvc.perform(put("/api/v1/admin/books/" + savedBook.getId())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.title").value("Kinh tế học cơ bản - Bản mới"));
+    }
+
+    @Test
+    @DisplayName("PATCH /api/v1/admin/books/{id}/status - 200 OK chuyển trạng thái kinh doanh")
+    void testUpdateBookStatus_Success() throws Exception {
+        UpdateBookStatusRequest request = UpdateBookStatusRequest.builder()
+                .status(BookStatus.INACTIVE)
+                .build();
+
+        mockMvc.perform(patch("/api/v1/admin/books/" + savedBook.getId() + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("INACTIVE"));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/admin/books/{id} - 200 OK xóa sách không có giao dịch thành công")
+    void testDeleteBook_Success() throws Exception {
+        mockMvc.perform(delete("/api/v1/admin/books/" + savedBook.getId())
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @AfterEach
+    void tearDown() {
+        cleanDatabase();
+    }
+
+    private void cleanDatabase() {
+        if (orderDetailRepository != null) {
+            orderDetailRepository.deleteAll();
+        }
+        if (orderRepository != null) {
+            orderRepository.deleteAll();
+        }
+        if (cartItemRepository != null) {
+            cartItemRepository.deleteAll();
+        }
+        reviewRepository.deleteAll();
+        wishlistRepository.deleteAll();
+        bookRepository.deleteAll();
+        categoryRepository.deleteAll();
+        authorRepository.deleteAll();
+        publisherRepository.deleteAll();
+    }
+}

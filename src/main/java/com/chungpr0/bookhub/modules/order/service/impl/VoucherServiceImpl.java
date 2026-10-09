@@ -1,6 +1,5 @@
 package com.chungpr0.bookhub.modules.order.service.impl;
 
-import com.chungpr0.bookhub.common.dto.PageMeta;
 import com.chungpr0.bookhub.common.dto.PageResponse;
 import com.chungpr0.bookhub.common.exception.AppException;
 import com.chungpr0.bookhub.common.exception.ErrorCode;
@@ -148,16 +147,7 @@ public class VoucherServiceImpl implements VoucherService {
                 })
                 .toList();
 
-        PageMeta meta = PageMeta.builder()
-                .number(page.getNumber())
-                .size(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .build();
-
-        return PageResponse.of(items, meta);
+        return PageResponse.of(items, page);
     }
 
     @Override
@@ -298,20 +288,7 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         Page<VoucherUsage> page = voucherUsageRepository.findByVoucherId(voucherId, pageable);
-        List<VoucherUsageResponse> items = page.getContent().stream()
-                .map(orderMapper::toVoucherUsageResponse)
-                .toList();
-
-        PageMeta meta = PageMeta.builder()
-                .number(page.getNumber())
-                .size(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .build();
-
-        return PageResponse.of(items, meta);
+        return PageResponse.of(page, orderMapper::toVoucherUsageResponse);
     }
 
     private long calculateDiscount(Voucher voucher, long subtotal) {

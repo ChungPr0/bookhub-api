@@ -66,6 +66,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/me/**").hasRole("CUSTOMER")
                         // Admin / Staff APIs
                         .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
+                        // Media Upload APIs
+                        .requestMatchers("/api/v1/media/**").authenticated()
                         // Default
                         .anyRequest().permitAll()
                 )

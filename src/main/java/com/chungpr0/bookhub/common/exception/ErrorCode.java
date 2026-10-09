@@ -89,7 +89,28 @@ public enum ErrorCode {
     REFUND_NOT_APPLICABLE(HttpStatus.UNPROCESSABLE_CONTENT, "REFUND_NOT_APPLICABLE", "Đơn hàng không ở trạng thái chờ hoàn tiền"),
     LAST_PAYMENT_METHOD_PROTECTION(HttpStatus.UNPROCESSABLE_CONTENT, "LAST_PAYMENT_METHOD_PROTECTION", "Không thể vô hiệu hóa phương thức thanh toán đang hoạt động duy nhất"),
     SHIPPING_REGION_UNSUPPORTED(HttpStatus.UNPROCESSABLE_CONTENT, "SHIPPING_REGION_UNSUPPORTED", "Dịch vụ giao hàng không hỗ trợ địa bàn đã chọn"),
-    PAYMENT_GATEWAY_ERROR(HttpStatus.BAD_GATEWAY, "PAYMENT_GATEWAY_ERROR", "Cổng thanh toán trực tuyến gặp sự cố");
+    PAYMENT_GATEWAY_ERROR(HttpStatus.BAD_GATEWAY, "PAYMENT_GATEWAY_ERROR", "Cổng thanh toán trực tuyến gặp sự cố"),
+
+    // MODULE 06 - ADMIN CATALOG, REVIEWS & MEDIA
+    CATEGORY_NAME_DUPLICATE(HttpStatus.CONFLICT, "CATEGORY_NAME_DUPLICATE", "Tên danh mục đã tồn tại trong nhóm này"),
+    CATEGORY_HAS_CHILDREN(HttpStatus.CONFLICT, "CATEGORY_HAS_CHILDREN", "Không thể xóa: Vui lòng xóa hoặc di chuyển các danh mục con trước"),
+    CATEGORY_HAS_BOOKS(HttpStatus.CONFLICT, "CATEGORY_HAS_BOOKS", "Không thể xóa: Danh mục này đang chứa sách"),
+    AUTHOR_HAS_BOOKS(HttpStatus.CONFLICT, "AUTHOR_HAS_BOOKS", "Không thể xóa: Tác giả này đang được liên kết với sách trong hệ thống"),
+    PUBLISHER_NAME_DUPLICATE(HttpStatus.CONFLICT, "PUBLISHER_NAME_DUPLICATE", "Tên nhà xuất bản đã tồn tại trong hệ thống"),
+    PUBLISHER_HAS_BOOKS(HttpStatus.CONFLICT, "PUBLISHER_HAS_BOOKS", "Không thể xóa: Nhà xuất bản này đang được liên kết với sách trong hệ thống"),
+    ISBN_ALREADY_EXISTS(HttpStatus.CONFLICT, "ISBN_ALREADY_EXISTS", "Mã ISBN đã thuộc về một cuốn sách khác"),
+    BOOK_HAS_TRANSACTIONS(HttpStatus.CONFLICT, "BOOK_HAS_TRANSACTIONS", "Không thể xóa cuốn sách này vì đã phát sinh lịch sử giao dịch hoặc đơn hàng"),
+    CATEGORY_MAX_DEPTH_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "CATEGORY_MAX_DEPTH_EXCEEDED", "Hệ thống chỉ hỗ trợ tối đa 3 cấp danh mục"),
+    CATEGORY_CIRCULAR_REFERENCE(HttpStatus.UNPROCESSABLE_CONTENT, "CATEGORY_CIRCULAR_REFERENCE", "Danh mục cha không thể là chính nó hoặc danh mục con cháu của nó"),
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REVIEW_NOT_FOUND", "Không tìm thấy bài đánh giá yêu cầu"),
+    REVIEW_ALREADY_EXISTS(HttpStatus.CONFLICT, "REVIEW_ALREADY_EXISTS", "Bạn đã gửi đánh giá cho cuốn sách này trong đơn hàng trước đó"),
+    REVIEW_NOT_ALLOWED(HttpStatus.UNPROCESSABLE_CONTENT, "REVIEW_NOT_ALLOWED", "Chỉ được phép đánh giá hoặc chỉnh sửa sản phẩm từ đơn hàng đã hoàn tất"),
+    REVIEW_PERIOD_EXPIRED(HttpStatus.UNPROCESSABLE_CONTENT, "REVIEW_PERIOD_EXPIRED", "Đã hết thời hạn 30 ngày cho phép thực hiện thao tác đánh giá"),
+    FILE_REQUIRED(HttpStatus.BAD_REQUEST, "FILE_REQUIRED", "Vui lòng chọn tệp tin hình ảnh cần tải lên"),
+    FILE_TOO_LARGE(HttpStatus.CONTENT_TOO_LARGE, "FILE_TOO_LARGE", "Dung lượng ảnh vượt quá giới hạn tối đa 5MB"),
+    UNSUPPORTED_FILE_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_FILE_TYPE", "Hệ thống chỉ hỗ trợ định dạng JPG, PNG hoặc WEBP"),
+    TOO_MANY_FILES(HttpStatus.UNPROCESSABLE_CONTENT, "TOO_MANY_FILES", "Số lượng ảnh tải lên cùng lúc vượt quá giới hạn tối đa 10 ảnh"),
+    STORAGE_SERVICE_ERROR(HttpStatus.BAD_GATEWAY, "STORAGE_SERVICE_ERROR", "Lỗi kết nối dịch vụ lưu trữ media");
 
     private final HttpStatus httpStatus;
     private final String code;

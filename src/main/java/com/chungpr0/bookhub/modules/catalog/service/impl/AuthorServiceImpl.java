@@ -1,6 +1,5 @@
 package com.chungpr0.bookhub.modules.catalog.service.impl;
 
-import com.chungpr0.bookhub.common.dto.PageMeta;
 import com.chungpr0.bookhub.common.dto.PageResponse;
 import com.chungpr0.bookhub.common.exception.AppException;
 import com.chungpr0.bookhub.common.exception.ErrorCode;
@@ -47,16 +46,7 @@ public class AuthorServiceImpl implements AuthorService {
                         .build())
                 .toList();
 
-        PageMeta meta = PageMeta.builder()
-                .number(authorPage.getNumber())
-                .size(authorPage.getSize())
-                .totalElements(authorPage.getTotalElements())
-                .totalPages(authorPage.getTotalPages())
-                .first(authorPage.isFirst())
-                .last(authorPage.isLast())
-                .build();
-
-        return PageResponse.of(items, meta);
+        return PageResponse.of(items, authorPage);
     }
 
     @Override

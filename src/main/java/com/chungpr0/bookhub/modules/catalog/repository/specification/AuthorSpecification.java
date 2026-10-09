@@ -1,0 +1,22 @@
+package com.chungpr0.bookhub.modules.catalog.repository.specification;
+
+import com.chungpr0.bookhub.modules.catalog.entity.Author;
+import org.springframework.data.jpa.domain.Specification;
+
+public final class AuthorSpecification {
+
+    private AuthorSpecification() {
+        // Suppress default constructor for utility/specification class
+    }
+
+    public static Specification<Author> withKeyword(String keyword) {
+        return (root, query, criteriaBuilder) -> {
+            if (keyword == null || keyword.isBlank()) {
+                return criteriaBuilder.conjunction();
+            }
+            String pattern = "%" + keyword.trim().toLowerCase() + "%";
+            return criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), pattern);
+        };
+    }
+}
+

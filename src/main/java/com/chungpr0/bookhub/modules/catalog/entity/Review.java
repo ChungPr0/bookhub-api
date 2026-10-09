@@ -58,6 +58,9 @@ public class Review extends BaseEntity {
     @Builder.Default
     private ReviewStatus status = ReviewStatus.VISIBLE;
 
+    @Column(name = "hidden_reason", length = 255)
+    private String hiddenReason;
+
     @Column(name = "admin_reply", columnDefinition = "TEXT")
     private String adminReply;
 

@@ -27,9 +27,15 @@ import com.chungpr0.bookhub.modules.catalog.dto.response.PublisherSummaryRespons
 import com.chungpr0.bookhub.modules.catalog.dto.response.RatingSummaryResponse;
 import com.chungpr0.bookhub.modules.catalog.dto.response.ReviewAdminReplyResponse;
 import com.chungpr0.bookhub.modules.catalog.dto.response.ReviewCustomerResponse;
+import com.chungpr0.bookhub.common.util.SlugUtils;
+import com.chungpr0.bookhub.modules.cart.repository.CartItemRepository;
+import com.chungpr0.bookhub.modules.catalog.dto.request.CreateBookRequest;
+import com.chungpr0.bookhub.modules.catalog.dto.request.UpdateBookRequest;
 import com.chungpr0.bookhub.modules.catalog.entity.Author;
 import com.chungpr0.bookhub.modules.catalog.entity.Book;
+import com.chungpr0.bookhub.modules.catalog.entity.BookImage;
 import com.chungpr0.bookhub.modules.catalog.entity.Category;
+import com.chungpr0.bookhub.modules.catalog.entity.Publisher;
 import com.chungpr0.bookhub.modules.catalog.entity.Review;
 import com.chungpr0.bookhub.modules.catalog.repository.AuthorRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.BookRepository;
@@ -39,6 +45,7 @@ import com.chungpr0.bookhub.modules.catalog.repository.ReviewRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.WishlistRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.specification.BookSpecification;
 import com.chungpr0.bookhub.modules.catalog.service.BookService;
+import com.chungpr0.bookhub.modules.order.repository.OrderDetailRepository;
 import com.chungpr0.bookhub.modules.user.entity.Customer;
 import com.chungpr0.bookhub.modules.user.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
@@ -80,6 +87,8 @@ public class BookServiceImpl implements BookService {
     private final ReviewRepository reviewRepository;
     private final WishlistRepository wishlistRepository;
     private final CustomerRepository customerRepository;
+    private final OrderDetailRepository orderDetailRepository;
+    private final CartItemRepository cartItemRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -118,14 +127,7 @@ public class BookServiceImpl implements BookService {
                 .map(this::mapToBookCard)
                 .toList();
 
-        PageMeta pageMeta = PageMeta.builder()
-                .number(bookPage.getNumber())
-                .size(bookPage.getSize())
-                .totalElements(bookPage.getTotalElements())
-                .totalPages(bookPage.getTotalPages())
-                .first(bookPage.isFirst())
-                .last(bookPage.isLast())
-                .build();
+        PageMeta pageMeta = PageMeta.of(bookPage);
 
         BookFacetsResponse facets = computeFacets(bookPage.getContent());
 
@@ -390,16 +392,7 @@ public class BookServiceImpl implements BookService {
                 })
                 .toList();
 
-        PageMeta meta = PageMeta.builder()
-                .number(reviewPage.getNumber())
-                .size(reviewPage.getSize())
-                .totalElements(reviewPage.getTotalElements())
-                .totalPages(reviewPage.getTotalPages())
-                .first(reviewPage.isFirst())
-                .last(reviewPage.isLast())
-                .build();
-
-        return PageResponse.of(items, meta);
+        return PageResponse.of(items, reviewPage);
     }
 
     @Override
@@ -444,16 +437,7 @@ public class BookServiceImpl implements BookService {
                         .build())
                 .toList();
 
-        PageMeta meta = PageMeta.builder()
-                .number(bookPage.getNumber())
-                .size(bookPage.getSize())
-                .totalElements(bookPage.getTotalElements())
-                .totalPages(bookPage.getTotalPages())
-                .first(bookPage.isFirst())
-                .last(bookPage.isLast())
-                .build();
-
-        return PageResponse.of(items, meta);
+        return PageResponse.of(items, bookPage);
     }
 
     @Override
@@ -627,5 +611,196 @@ public class BookServiceImpl implements BookService {
                 .coverTypes(coverTypes)
                 .priceRanges(priceRanges)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public AdminBookDetailResponse createBook(CreateBookRequest request) {
+        if (request.getSalePrice() > request.getOriginalPrice()) {
+            throw new AppException(ErrorCode.VALIDATION_FAILED, "Giá bán thực tế không được lớn hơn giá gốc");
+        }
+
+        String cleanIsbn = null;
+        if (StringUtils.hasText(request.getIsbn())) {
+            cleanIsbn = request.getIsbn().trim();
+            if (bookRepository.existsByIsbn(cleanIsbn)) {
+                throw new AppException(ErrorCode.ISBN_ALREADY_EXISTS, "Mã ISBN đã thuộc về một cuốn sách khác");
+            }
+        }
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND, "Không tìm thấy danh mục yêu cầu"));
+
+        Publisher publisher = publisherRepository.findById(request.getPublisherId())
+                .orElseThrow(() -> new AppException(ErrorCode.PUBLISHER_NOT_FOUND, "Không tìm thấy nhà xuất bản yêu cầu"));
+
+        List<Author> authors = new ArrayList<>();
+        for (Long authorId : request.getAuthorIds()) {
+            Author author = authorRepository.findById(authorId)
+                    .orElseThrow(() -> new AppException(ErrorCode.AUTHOR_NOT_FOUND, "Không tìm thấy tác giả yêu cầu với ID: " + authorId));
+            authors.add(author);
+        }
+
+        String slug = generateUniqueBookSlug(request.getTitle().trim(), null);
+
+        Book book = Book.builder()
+                .isbn(cleanIsbn)
+                .title(request.getTitle().trim())
+                .slug(slug)
+                .category(category)
+                .publisher(publisher)
+                .authors(authors)
+                .translator(request.getTranslator())
+                .publicationYear(request.getPublicationYear())
+                .language(StringUtils.hasText(request.getLanguage()) ? request.getLanguage().trim() : "VI")
+                .pageCount(request.getPageCount())
+                .coverType(request.getCoverType())
+                .dimensions(request.getDimensions())
+                .weightGram(request.getWeightGram())
+                .originalPrice(request.getOriginalPrice())
+                .salePrice(request.getSalePrice())
+                .description(request.getDescription())
+                .lowStockThreshold(request.getLowStockThreshold() != null ? request.getLowStockThreshold() : 10)
+                .status(request.getStatus() != null ? request.getStatus() : BookStatus.ACTIVE)
+                .stockQuantity(0)
+                .soldCount(0)
+                .avgRating(0.0)
+                .reviewCount(0)
+                .version(0)
+                .build();
+
+        if (request.getImages() != null && !request.getImages().isEmpty()) {
+            List<BookImage> bookImages = new ArrayList<>();
+            for (int i = 0; i < request.getImages().size(); i++) {
+                bookImages.add(BookImage.builder()
+                        .book(book)
+                        .url(request.getImages().get(i))
+                        .sortOrder(i)
+                        .build());
+            }
+            book.setImages(bookImages);
+        }
+
+        Book saved = bookRepository.save(book);
+        return getAdminBookDetail(saved.getId());
+    }
+
+    @Override
+    @Transactional
+    public AdminBookDetailResponse updateBook(Long id, UpdateBookRequest request) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_FOUND, "Không tìm thấy cuốn sách yêu cầu"));
+
+        if (request.getVersion() == null || !request.getVersion().equals(book.getVersion())) {
+            throw new AppException(ErrorCode.CONCURRENT_MODIFICATION, "Dữ liệu cuốn sách này vừa được chỉnh sửa bởi một quản trị viên khác. Vui lòng tải lại trang để lấy dữ liệu mới nhất");
+        }
+
+        if (request.getSalePrice() > request.getOriginalPrice()) {
+            throw new AppException(ErrorCode.VALIDATION_FAILED, "Giá bán thực tế không được lớn hơn giá gốc");
+        }
+
+        String cleanIsbn = null;
+        if (StringUtils.hasText(request.getIsbn())) {
+            cleanIsbn = request.getIsbn().trim();
+            if (bookRepository.existsByIsbnAndIdNot(cleanIsbn, id)) {
+                throw new AppException(ErrorCode.ISBN_ALREADY_EXISTS, "Mã ISBN đã thuộc về một cuốn sách khác");
+            }
+        }
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND, "Không tìm thấy danh mục yêu cầu"));
+
+        Publisher publisher = publisherRepository.findById(request.getPublisherId())
+                .orElseThrow(() -> new AppException(ErrorCode.PUBLISHER_NOT_FOUND, "Không tìm thấy nhà xuất bản yêu cầu"));
+
+        List<Author> authors = new ArrayList<>();
+        for (Long authorId : request.getAuthorIds()) {
+            Author author = authorRepository.findById(authorId)
+                    .orElseThrow(() -> new AppException(ErrorCode.AUTHOR_NOT_FOUND, "Không tìm thấy tác giả yêu cầu với ID: " + authorId));
+            authors.add(author);
+        }
+
+        String trimmedTitle = request.getTitle().trim();
+        if (!book.getTitle().equals(trimmedTitle)) {
+            book.setTitle(trimmedTitle);
+            book.setSlug(generateUniqueBookSlug(trimmedTitle, id));
+        }
+
+        book.setIsbn(cleanIsbn);
+        book.setCategory(category);
+        book.setPublisher(publisher);
+        book.setAuthors(authors);
+        book.setTranslator(request.getTranslator());
+        book.setPublicationYear(request.getPublicationYear());
+        book.setLanguage(StringUtils.hasText(request.getLanguage()) ? request.getLanguage().trim() : "VI");
+        book.setPageCount(request.getPageCount());
+        book.setCoverType(request.getCoverType());
+        book.setDimensions(request.getDimensions());
+        book.setWeightGram(request.getWeightGram());
+        book.setOriginalPrice(request.getOriginalPrice());
+        book.setSalePrice(request.getSalePrice());
+        book.setDescription(request.getDescription());
+        book.setLowStockThreshold(request.getLowStockThreshold() != null ? request.getLowStockThreshold() : 10);
+        if (request.getStatus() != null) {
+            book.setStatus(request.getStatus());
+        }
+
+        if (request.getImages() != null) {
+            book.getImages().clear();
+            for (int i = 0; i < request.getImages().size(); i++) {
+                book.getImages().add(BookImage.builder()
+                        .book(book)
+                        .url(request.getImages().get(i))
+                        .sortOrder(i)
+                        .build());
+            }
+        }
+
+        Book saved = bookRepository.save(book);
+        return getAdminBookDetail(saved.getId());
+    }
+
+    @Override
+    @Transactional
+    public void updateBookStatus(Long id, BookStatus status) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_FOUND, "Không tìm thấy cuốn sách yêu cầu"));
+        book.setStatus(status);
+        bookRepository.save(book);
+    }
+
+    @Override
+    @Transactional
+    public void deleteBook(Long id) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_FOUND, "Không tìm thấy cuốn sách yêu cầu"));
+
+        long orderCount = orderDetailRepository.countByBookId(id);
+        if (orderCount > 0) {
+            throw new AppException(ErrorCode.BOOK_HAS_TRANSACTIONS, "Không thể xóa cuốn sách này vì đã phát sinh " + orderCount + " đơn hàng. Vui lòng chuyển trạng thái sang Ngừng kinh doanh");
+        }
+
+        cartItemRepository.deleteByBookId(id);
+        wishlistRepository.deleteByBookId(id);
+        bookRepository.delete(book);
+    }
+
+    private String generateUniqueBookSlug(String title, Long currentId) {
+        String baseSlug = SlugUtils.toSlug(title);
+        String candidateSlug = baseSlug;
+        int counter = 2;
+
+        while (isBookSlugConflict(candidateSlug, currentId)) {
+            candidateSlug = baseSlug + "-" + counter;
+            counter++;
+        }
+        return candidateSlug;
+    }
+
+    private boolean isBookSlugConflict(String slug, Long currentId) {
+        if (currentId == null) {
+            return bookRepository.existsBySlug(slug);
+        }
+        return bookRepository.existsBySlugAndIdNot(slug, currentId);
     }
 }

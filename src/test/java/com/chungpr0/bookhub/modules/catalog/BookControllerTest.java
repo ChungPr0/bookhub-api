@@ -17,13 +17,17 @@ import com.chungpr0.bookhub.modules.catalog.entity.Wishlist;
 import com.chungpr0.bookhub.modules.catalog.entity.WishlistId;
 import com.chungpr0.bookhub.modules.catalog.repository.AuthorRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.BookRepository;
+import com.chungpr0.bookhub.modules.cart.repository.CartItemRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.CategoryRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.PublisherRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.ReviewRepository;
 import com.chungpr0.bookhub.modules.catalog.repository.WishlistRepository;
+import com.chungpr0.bookhub.modules.order.repository.OrderDetailRepository;
+import com.chungpr0.bookhub.modules.order.repository.OrderRepository;
 import com.chungpr0.bookhub.modules.user.entity.Customer;
 import com.chungpr0.bookhub.modules.user.repository.CustomerRepository;
 import com.chungpr0.bookhub.security.JwtTokenProvider;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -81,6 +85,15 @@ class BookControllerTest {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Autowired(required = false)
+    private OrderDetailRepository orderDetailRepository;
+
+    @Autowired(required = false)
+    private OrderRepository orderRepository;
+
+    @Autowired(required = false)
+    private CartItemRepository cartItemRepository;
+
     private Book savedBook;
     private Category savedCategory;
     private Author savedAuthor;
@@ -95,12 +108,7 @@ class BookControllerTest {
                 .apply(springSecurity())
                 .build();
 
-        reviewRepository.deleteAll();
-        wishlistRepository.deleteAll();
-        bookRepository.deleteAll();
-        categoryRepository.deleteAll();
-        authorRepository.deleteAll();
-        publisherRepository.deleteAll();
+        cleanDatabase();
 
         savedCategory = Category.builder()
                 .name("Văn học")
@@ -320,6 +328,29 @@ class BookControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.items[0].rating").value(5))
                 .andExpect(jsonPath("$.data.items[0].customer.displayName").value("Nguyễn V. A."));
+    }
+
+    @AfterEach
+    void tearDown() {
+        cleanDatabase();
+    }
+
+    private void cleanDatabase() {
+        if (orderDetailRepository != null) {
+            orderDetailRepository.deleteAll();
+        }
+        if (orderRepository != null) {
+            orderRepository.deleteAll();
+        }
+        if (cartItemRepository != null) {
+            cartItemRepository.deleteAll();
+        }
+        reviewRepository.deleteAll();
+        wishlistRepository.deleteAll();
+        bookRepository.deleteAll();
+        categoryRepository.deleteAll();
+        authorRepository.deleteAll();
+        publisherRepository.deleteAll();
     }
 }
 

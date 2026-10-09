@@ -1,6 +1,5 @@
 package com.chungpr0.bookhub.modules.cart.service.impl;
 
-import com.chungpr0.bookhub.common.dto.PageMeta;
 import com.chungpr0.bookhub.common.dto.PageResponse;
 import com.chungpr0.bookhub.common.enums.BookStatus;
 import com.chungpr0.bookhub.common.enums.CartMergeResult;
@@ -353,20 +352,7 @@ public class CartServiceImpl implements CartService {
         Specification<Cart> spec = CartSpecification.filter(filter);
         Page<Cart> page = cartRepository.findAll(spec, pageable);
 
-        List<AdminCartResponse> items = page.getContent().stream()
-                .map(cartMapper::toAdminCartResponse)
-                .toList();
-
-        PageMeta meta = PageMeta.builder()
-                .number(page.getNumber())
-                .size(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .build();
-
-        return PageResponse.of(items, meta);
+        return PageResponse.of(page, cartMapper::toAdminCartResponse);
     }
 
     @Override

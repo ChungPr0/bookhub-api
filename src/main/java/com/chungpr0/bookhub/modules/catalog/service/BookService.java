@@ -10,6 +10,10 @@ import com.chungpr0.bookhub.modules.catalog.dto.response.BookReviewResponse;
 import com.chungpr0.bookhub.modules.catalog.dto.response.BookSearchResponse;
 import com.chungpr0.bookhub.modules.catalog.dto.response.BookSuggestResponse;
 
+import com.chungpr0.bookhub.common.enums.BookStatus;
+import com.chungpr0.bookhub.modules.catalog.dto.request.CreateBookRequest;
+import com.chungpr0.bookhub.modules.catalog.dto.request.UpdateBookRequest;
+
 import java.util.List;
 
 public interface BookService {
@@ -31,5 +35,13 @@ public interface BookService {
     PageResponse<AdminBookResponse> getAdminBooks(String keyword, String status, Long categoryId, int page, int size);
 
     AdminBookDetailResponse getAdminBookDetail(Long id);
+
+    AdminBookDetailResponse createBook(CreateBookRequest request);
+
+    AdminBookDetailResponse updateBook(Long id, UpdateBookRequest request);
+
+    void updateBookStatus(Long id, BookStatus status);
+
+    void deleteBook(Long id);
 }
 

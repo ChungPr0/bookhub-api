@@ -45,5 +45,13 @@ public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificat
 
     @Query("SELECT b FROM Book b WHERE b.publisher.id = :publisherId AND b.id != :excludeBookId AND b.status = com.chungpr0.bookhub.common.enums.BookStatus.ACTIVE")
     List<Book> findRelatedBooksByPublisher(@Param("publisherId") Long publisherId, @Param("excludeBookId") Long excludeBookId, Pageable pageable);
+
+    boolean existsByIsbn(String isbn);
+
+    boolean existsByIsbnAndIdNot(String isbn, Long id);
+
+    boolean existsBySlug(String slug);
+
+    boolean existsBySlugAndIdNot(String slug, Long id);
 }
 

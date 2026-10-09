@@ -1,7 +1,11 @@
 package com.chungpr0.bookhub.modules.catalog;
 
+import com.chungpr0.bookhub.modules.cart.repository.CartItemRepository;
 import com.chungpr0.bookhub.modules.catalog.entity.Category;
 import com.chungpr0.bookhub.modules.catalog.repository.CategoryRepository;
+import com.chungpr0.bookhub.modules.order.repository.OrderDetailRepository;
+import com.chungpr0.bookhub.modules.order.repository.OrderRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,6 +41,15 @@ class CategoryControllerTest {
     @Autowired
     private com.chungpr0.bookhub.modules.catalog.repository.WishlistRepository wishlistRepository;
 
+    @Autowired(required = false)
+    private OrderDetailRepository orderDetailRepository;
+
+    @Autowired(required = false)
+    private OrderRepository orderRepository;
+
+    @Autowired(required = false)
+    private CartItemRepository cartItemRepository;
+
     @BeforeEach
     void setUp() {
         this.mockMvc = MockMvcBuilders
@@ -44,10 +57,7 @@ class CategoryControllerTest {
                 .apply(springSecurity())
                 .build();
 
-        reviewRepository.deleteAll();
-        wishlistRepository.deleteAll();
-        bookRepository.deleteAll();
-        categoryRepository.deleteAll();
+        cleanDatabase();
 
         Category root = Category.builder()
                 .name("Văn học")
@@ -99,6 +109,27 @@ class CategoryControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value("CATEGORY_NOT_FOUND"));
+    }
+
+    @AfterEach
+    void tearDown() {
+        cleanDatabase();
+    }
+
+    private void cleanDatabase() {
+        if (orderDetailRepository != null) {
+            orderDetailRepository.deleteAll();
+        }
+        if (orderRepository != null) {
+            orderRepository.deleteAll();
+        }
+        if (cartItemRepository != null) {
+            cartItemRepository.deleteAll();
+        }
+        reviewRepository.deleteAll();
+        wishlistRepository.deleteAll();
+        bookRepository.deleteAll();
+        categoryRepository.deleteAll();
     }
 }
 
