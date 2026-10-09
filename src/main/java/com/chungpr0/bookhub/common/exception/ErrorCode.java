@@ -110,7 +110,15 @@ public enum ErrorCode {
     FILE_TOO_LARGE(HttpStatus.CONTENT_TOO_LARGE, "FILE_TOO_LARGE", "Dung lượng ảnh vượt quá giới hạn tối đa 5MB"),
     UNSUPPORTED_FILE_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_FILE_TYPE", "Hệ thống chỉ hỗ trợ định dạng JPG, PNG hoặc WEBP"),
     TOO_MANY_FILES(HttpStatus.UNPROCESSABLE_CONTENT, "TOO_MANY_FILES", "Số lượng ảnh tải lên cùng lúc vượt quá giới hạn tối đa 10 ảnh"),
-    STORAGE_SERVICE_ERROR(HttpStatus.BAD_GATEWAY, "STORAGE_SERVICE_ERROR", "Lỗi kết nối dịch vụ lưu trữ media");
+    STORAGE_SERVICE_ERROR(HttpStatus.BAD_GATEWAY, "STORAGE_SERVICE_ERROR", "Lỗi kết nối dịch vụ lưu trữ media"),
+
+    // MODULE 07 - INVENTORY & STOCK
+    SUPPLIER_NOT_FOUND(HttpStatus.NOT_FOUND, "SUPPLIER_NOT_FOUND", "Không tìm thấy nhà cung cấp"),
+    SUPPLIER_NAME_DUPLICATE(HttpStatus.CONFLICT, "SUPPLIER_NAME_DUPLICATE", "Tên nhà cung cấp đã tồn tại"),
+    SUPPLIER_HAS_RECEIPTS(HttpStatus.CONFLICT, "SUPPLIER_HAS_RECEIPTS", "Không thể xóa nhà cung cấp đã có phiếu nhập kho"),
+    STOCK_RECEIPT_NOT_FOUND(HttpStatus.NOT_FOUND, "STOCK_RECEIPT_NOT_FOUND", "Không tìm thấy phiếu nhập kho"),
+    BATCH_NOT_FOUND(HttpStatus.NOT_FOUND, "BATCH_NOT_FOUND", "Không tìm thấy lô hàng"),
+    ADJUSTMENT_EXCEEDS_STOCK(HttpStatus.UNPROCESSABLE_CONTENT, "ADJUSTMENT_EXCEEDS_STOCK", "Số lượng điều chỉnh giảm vượt quá tồn kho hiện tại");
 
     private final HttpStatus httpStatus;
     private final String code;
