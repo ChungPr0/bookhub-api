@@ -34,3 +34,9 @@ build/
 
 # Antigravity agent configuration and local skills
 .agent/
+
+# Local Environment & Secrets
+.env
+.env.*
+*-local.yaml
+application-local.yaml

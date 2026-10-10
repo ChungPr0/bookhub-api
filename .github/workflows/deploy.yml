@@ -1,0 +1,179 @@
+name: CI/CD Pipeline - BookHub API
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  # ========================================
+  # Stage 1: CI (Module Testing - Fail Fast)
+  # ========================================
+  ci-test:
+    name: CI - Module Testing (Fail Fast)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 Temurin
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Grant Execute Permission to Maven Wrapper
+        run: chmod +x ./mvnw
+
+      - name: 1. Compile Code
+        run: ./mvnw compile test-compile
+
+      - name: 2. Test Module 01 (Auth & Security)
+        run: ./mvnw test -Dtest="com.chungpr0.bookhub.modules.auth.**"
+
+      - name: 3. Test Module 02 (User Management)
+        run: ./mvnw test -Dtest="com.chungpr0.bookhub.modules.user.**"
+
+      - name: 4. Test Module 03 (Catalog & Media)
+        run: ./mvnw test -Dtest="com.chungpr0.bookhub.modules.catalog.**"
+
+      - name: 5. Test Module 04 (Cart & Wishlist)
+        run: ./mvnw test -Dtest="com.chungpr0.bookhub.modules.cart.**"
+
+      - name: 6. Test Module 05 (Order & Payment)
+        run: ./mvnw test -Dtest="com.chungpr0.bookhub.modules.order.**"
+
+      - name: 7. Test Module 06 (Inventory)
+        run: ./mvnw test -Dtest="com.chungpr0.bookhub.modules.inventory.**"
+
+      - name: 8. Test Module 07 (Report & Statistics)
+        run: ./mvnw test -Dtest="com.chungpr0.bookhub.modules.report.**"
+
+  # =======================================
+  # Stage 2: CD - Build & Push Docker Image
+  # =======================================
+  cd-build-push:
+    name: CD - Build & Push Docker Image
+    needs: [ci-test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_name: ${{ steps.repo_lower.outputs.image_name }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 Temurin
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Grant Execute Permission to Maven Wrapper
+        run: chmod +x ./mvnw
+
+      - name: Package JAR
+        run: ./mvnw package -DskipTests
+
+      - name: Convert Repository Name to Lowercase
+        id: repo_lower
+        run: |
+          IMAGE="ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')"
+          echo "IMAGE_NAME=${IMAGE}" >> $GITHUB_ENV
+          echo "image_name=${IMAGE}" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry (ghcr.io)
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t "${IMAGE_NAME}:latest" -t "${IMAGE_NAME}:${{ github.sha }}" .
+          docker push "${IMAGE_NAME}:latest"
+          docker push "${IMAGE_NAME}:${{ github.sha }}"
+
+  # ===================================
+  # Stage 3: CD - Deploy to VPS via SSH
+  # ===================================
+  cd-deploy:
+    name: CD - Deploy to VPS
+    needs: [cd-build-push]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute Deployment on VPS via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          IMAGE_NAME: ${{ needs.cd-build-push.outputs.image_name }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          envs: GITHUB_TOKEN,GITHUB_ACTOR,IMAGE_NAME
+          script: |
+            set -e
+
+            # Ensure image name is in lowercase
+            IMAGE_NAME="${IMAGE_NAME:-ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')}"
+            echo "Starting deployment of image: ${IMAGE_NAME}:latest"
+
+            # 1. Login to GHCR (if token provided) and pull latest image
+            if [ -n "$GITHUB_TOKEN" ]; then
+              echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin || true
+            fi
+            docker pull "${IMAGE_NAME}:latest"
+
+            # 2. Stop and remove existing container safely
+            docker stop bookhub-api || true && docker rm bookhub-api || true
+
+            # 3. Start new container with strict memory limits for 1GB RAM VPS
+            docker run -d \
+              --name bookhub-api \
+              -p 8080:8080 \
+              -m 450m \
+              --memory-swap 512m \
+              --env-file /opt/bookhub-api/.env \
+              --restart unless-stopped \
+              "${IMAGE_NAME}:latest"
+
+            # 4. Clean up dangling images
+            docker image prune -f
+
+            # 5. Automated Health Check
+            echo "Waiting 25s for Spring Boot to start up..."
+            sleep 25
+
+            HEALTH_URL="http://localhost:8080/actuator/health"
+            HEALTH_PASSED=false
+
+            for attempt in 1 2 3; do
+              echo "Checking health status (attempt $attempt/3)..."
+              RESPONSE=$(curl -s -f "$HEALTH_URL" || true)
+              if echo "$RESPONSE" | grep -q "UP"; then
+                echo "Health check SUCCESSFUL! Status: UP ($RESPONSE)"
+                HEALTH_PASSED=true
+                break
+              fi
+              echo "Attempt $attempt failed or status is not UP yet. Retrying in 5s..."
+              sleep 5
+            done
+
+            if [ "$HEALTH_PASSED" = false ]; then
+              echo "Health check FAILED after 3 attempts!"
+              echo "=== Last 60 log lines of container bookhub-api ==="
+              docker logs --tail 60 bookhub-api
+              exit 1
+            fi
+
+            echo "BookHub API deployment completed successfully!"
+
