@@ -53,5 +53,9 @@ public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificat
     boolean existsBySlug(String slug);
 
     boolean existsBySlugAndIdNot(String slug, Long id);
+
+    long countByStockQuantityLessThanEqualAndStockQuantityGreaterThan(int lowStockThreshold, int zero);
+
+    long countByStockQuantityLessThanEqual(int zero);
 }
 

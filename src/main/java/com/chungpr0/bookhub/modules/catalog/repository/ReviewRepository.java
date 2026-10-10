@@ -39,5 +39,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, JpaSpecif
 
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.book.id = :bookId AND r.status = com.chungpr0.bookhub.common.enums.ReviewStatus.VISIBLE")
     Double getAverageVisibleRatingByBookId(@Param("bookId") Long bookId);
+
+    long countByAdminReplyIsNull();
 }
 

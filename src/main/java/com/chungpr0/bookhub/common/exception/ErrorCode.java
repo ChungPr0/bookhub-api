@@ -118,7 +118,14 @@ public enum ErrorCode {
     SUPPLIER_HAS_RECEIPTS(HttpStatus.CONFLICT, "SUPPLIER_HAS_RECEIPTS", "Không thể xóa nhà cung cấp đã có phiếu nhập kho"),
     STOCK_RECEIPT_NOT_FOUND(HttpStatus.NOT_FOUND, "STOCK_RECEIPT_NOT_FOUND", "Không tìm thấy phiếu nhập kho"),
     BATCH_NOT_FOUND(HttpStatus.NOT_FOUND, "BATCH_NOT_FOUND", "Không tìm thấy lô hàng"),
-    ADJUSTMENT_EXCEEDS_STOCK(HttpStatus.UNPROCESSABLE_CONTENT, "ADJUSTMENT_EXCEEDS_STOCK", "Số lượng điều chỉnh giảm vượt quá tồn kho hiện tại");
+    ADJUSTMENT_EXCEEDS_STOCK(HttpStatus.UNPROCESSABLE_CONTENT, "ADJUSTMENT_EXCEEDS_STOCK", "Số lượng điều chỉnh giảm vượt quá tồn kho hiện tại"),
+
+    // MODULE 08 - ADMIN USERS & REPORTS
+    SELF_MODIFICATION_FORBIDDEN(HttpStatus.FORBIDDEN, "SELF_MODIFICATION_FORBIDDEN", "Không được phép tự thay đổi trạng thái, quyền hạn hoặc mật khẩu của chính mình"),
+    STAFF_NOT_FOUND(HttpStatus.NOT_FOUND, "STAFF_NOT_FOUND", "Không tìm thấy thông tin nhân viên"),
+    LAST_ADMIN_PROTECTION(HttpStatus.UNPROCESSABLE_CONTENT, "LAST_ADMIN_PROTECTION", "Không thể khóa hoặc hạ quyền tài khoản quản trị viên duy nhất đang hoạt động"),
+    DATE_RANGE_TOO_LARGE(HttpStatus.UNPROCESSABLE_CONTENT, "DATE_RANGE_TOO_LARGE", "Khoảng thời gian báo cáo không được vượt quá 366 ngày"),
+    EXPORT_TOO_LARGE(HttpStatus.UNPROCESSABLE_CONTENT, "EXPORT_TOO_LARGE", "Dữ liệu kết xuất vượt quá giới hạn 50.000 dòng cho phép");
 
     private final HttpStatus httpStatus;
     private final String code;

@@ -20,5 +20,14 @@ public interface BatchRepository extends JpaRepository<Batch, Long>, JpaSpecific
 
     @Query("SELECT b FROM Batch b WHERE b.book.id = :bookId ORDER BY b.importDate DESC, b.id DESC")
     List<Batch> findLatestByBookId(@Param("bookId") Long bookId, Pageable pageable);
+
+    @Query("SELECT COALESCE(SUM(b.quantityRemaining * b.importPrice), 0) FROM Batch b WHERE b.quantityRemaining > 0")
+    Long sumTotalStockValue();
+
+    @Query("SELECT COALESCE(SUM(b.quantityRemaining * b.importPrice), 0) FROM Batch b WHERE b.book.id = :bookId AND b.quantityRemaining > 0")
+    Long sumStockValueByBookId(@Param("bookId") Long bookId);
+
+    @Query("SELECT AVG(b.importPrice) FROM Batch b WHERE b.book.id = :bookId AND b.quantityRemaining > 0")
+    Double findAvgImportPriceByBookId(@Param("bookId") Long bookId);
 }
 
