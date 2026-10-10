@@ -149,27 +149,30 @@ jobs:
             # 4. Clean up dangling images
             docker image prune -f
 
-            # 5. Automated Health Check
-            echo "Waiting 25s for Spring Boot to start up..."
-            sleep 25
+            # 5. Automated Health Check (dynamic polling with up to 120s timeout)
+            echo "Waiting 30s for Spring Boot to start initialization..."
+            sleep 30
 
             HEALTH_URL="http://localhost:8080/actuator/health"
             HEALTH_PASSED=false
+            MAX_ATTEMPTS=18
+            attempt=1
 
-            for attempt in 1 2 3; do
-              echo "Checking health status (attempt $attempt/3)..."
+            while [ $attempt -le $MAX_ATTEMPTS ]; do
+              echo "Checking health status (attempt $attempt/$MAX_ATTEMPTS)..."
               RESPONSE=$(curl -s -f "$HEALTH_URL" || true)
               if echo "$RESPONSE" | grep -q "UP"; then
                 echo "Health check SUCCESSFUL! Status: UP ($RESPONSE)"
                 HEALTH_PASSED=true
                 break
               fi
-              echo "Attempt $attempt failed or status is not UP yet. Retrying in 5s..."
+              echo "Attempt $attempt: application is still starting up. Retrying in 5s..."
               sleep 5
+              attempt=$((attempt + 1))
             done
 
             if [ "$HEALTH_PASSED" = false ]; then
-              echo "Health check FAILED after 3 attempts!"
+              echo "Health check FAILED! Application did not report UP within 120 seconds."
               echo "=== Last 60 log lines of container bookhub-api ==="
               docker logs --tail 60 bookhub-api
               exit 1
