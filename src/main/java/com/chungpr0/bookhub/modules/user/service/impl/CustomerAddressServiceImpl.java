@@ -25,10 +25,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomerAddressServiceImpl implements CustomerAddressService {
 
-    private static final int MAX_ADDRESS_LIMIT = 10;
-
     private final AddressRepository addressRepository;
     private final CustomerRepository customerRepository;
+    private final com.chungpr0.bookhub.modules.user.config.UserProperties userProperties;
 
     @Override
     @Transactional(readOnly = true)
@@ -54,8 +53,11 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
         Customer customer = getCustomer(accountId);
 
         long currentCount = addressRepository.countByCustomerId(customer.getId());
-        if (currentCount >= MAX_ADDRESS_LIMIT) {
-            throw new AppException(ErrorCode.ADDRESS_LIMIT_EXCEEDED);
+        if (currentCount >= userProperties.getMaxAddresses()) {
+            throw new AppException(
+                    ErrorCode.ADDRESS_LIMIT_EXCEEDED,
+                    String.format("Bạn chỉ có thể lưu tối đa %d địa chỉ giao hàng", userProperties.getMaxAddresses())
+            );
         }
 
         String normalizedPhone = PhoneUtils.normalize(request.getReceiverPhone());

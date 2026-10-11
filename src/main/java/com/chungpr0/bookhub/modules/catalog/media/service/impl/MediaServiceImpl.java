@@ -19,9 +19,14 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@lombok.RequiredArgsConstructor
 public class MediaServiceImpl implements MediaService {
 
-    private static final long MAX_FILE_SIZE = 5L * 1024 * 1024; // 5 MB
+    private final com.chungpr0.bookhub.modules.catalog.media.config.MediaProperties mediaProperties;
+
+    public MediaServiceImpl() {
+        this.mediaProperties = new com.chungpr0.bookhub.modules.catalog.media.config.MediaProperties();
+    }
 
     @Override
     public MediaUploadResponse uploadSingle(MultipartFile file, MediaFolder folder, UserPrincipal principal) {
@@ -32,8 +37,8 @@ public class MediaServiceImpl implements MediaService {
         OffsetDateTime now = OffsetDateTime.now();
         String path = String.format("%s/%d/%02d/%s", folder.name().toLowerCase(), now.getYear(), now.getMonthValue(), generatedBase);
 
-        String url = "https://cdn.bookhub.vn/" + path;
-        String thumbUrl = "https://cdn.bookhub.vn/" + path.replace(".webp", "-thumb.webp");
+        String url = mediaProperties.getCdnBaseUrl() + "/" + path;
+        String thumbUrl = mediaProperties.getCdnBaseUrl() + "/" + path.replace(".webp", "-thumb.webp");
 
         return MediaUploadResponse.builder()
                 .url(url)
@@ -54,8 +59,11 @@ public class MediaServiceImpl implements MediaService {
             throw new AppException(ErrorCode.FILE_REQUIRED, "Vui lòng chọn ít nhất một tệp tin hình ảnh");
         }
 
-        if (files.size() > 10) {
-            throw new AppException(ErrorCode.TOO_MANY_FILES, "Số lượng ảnh tải lên cùng lúc vượt quá giới hạn tối đa 10 ảnh");
+        if (files.size() > mediaProperties.getMaxBatchFiles()) {
+            throw new AppException(
+                    ErrorCode.TOO_MANY_FILES,
+                    String.format("Số lượng ảnh tải lên cùng lúc vượt quá giới hạn tối đa %d ảnh", mediaProperties.getMaxBatchFiles())
+            );
         }
 
         // Atomic validation: all files must pass validation first
@@ -71,8 +79,8 @@ public class MediaServiceImpl implements MediaService {
             String generatedBase = generateWebpFileName(file.getOriginalFilename());
             String path = String.format("%s/%d/%02d/%s", folder.name().toLowerCase(), now.getYear(), now.getMonthValue(), generatedBase);
 
-            String url = "https://cdn.bookhub.vn/" + path;
-            String thumbUrl = "https://cdn.bookhub.vn/" + path.replace(".webp", "-thumb.webp");
+            String url = mediaProperties.getCdnBaseUrl() + "/" + path;
+            String thumbUrl = mediaProperties.getCdnBaseUrl() + "/" + path.replace(".webp", "-thumb.webp");
 
             items.add(MediaBatchItemResponse.builder()
                     .sortOrder(i)
@@ -108,8 +116,12 @@ public class MediaServiceImpl implements MediaService {
             throw new AppException(ErrorCode.FILE_REQUIRED, "Vui lòng chọn tệp tin hình ảnh cần tải lên");
         }
 
-        if (file.getSize() > MAX_FILE_SIZE) {
-            throw new AppException(ErrorCode.FILE_TOO_LARGE, "Dung lượng ảnh vượt quá giới hạn tối đa 5MB");
+        long maxSizeBytes = mediaProperties.getMaxFileSizeMb() * 1024L * 1024L;
+        if (file.getSize() > maxSizeBytes) {
+            throw new AppException(
+                    ErrorCode.FILE_TOO_LARGE,
+                    String.format("Dung lượng ảnh vượt quá giới hạn tối đa %dMB", mediaProperties.getMaxFileSizeMb())
+            );
         }
 
         try {

@@ -102,6 +102,7 @@ public class OrderServiceImpl implements OrderService {
     private final PointTransactionRepository pointTransactionRepository;
     private final PaymentService paymentService;
     private final OrderMapper orderMapper;
+    private final com.chungpr0.bookhub.modules.order.config.OrderProperties orderProperties;
 
     @Override
     @Transactional(readOnly = true)
@@ -416,9 +417,9 @@ public class OrderServiceImpl implements OrderService {
 
         OffsetDateTime paymentExpiresAt = null;
         if (request.getPaymentMethod() == PaymentMethodCode.VNPAY) {
-            paymentExpiresAt = now.plusMinutes(15);
+            paymentExpiresAt = now.plusMinutes(orderProperties.getVnpayTimeoutMinutes());
         } else if (request.getPaymentMethod() == PaymentMethodCode.BANK_TRANSFER) {
-            paymentExpiresAt = now.plusHours(48);
+            paymentExpiresAt = now.plusHours(orderProperties.getBankTransferTimeoutHours());
         }
 
         Order order = Order.builder()

@@ -22,19 +22,19 @@ public class CustomerProfileResponse {
     @Schema(description = "ID khách hàng", example = "1001")
     private Long id;
 
-    @Schema(description = "Họ và tên khách hàng", example = "Nguyễn Tiến Chung")
+    @Schema(description = "Họ và tên khách hàng", example = "Nguyễn Văn A")
     private String fullName;
 
     @Schema(description = "Số điện thoại tài khoản", example = "0988888888")
     private String phone;
 
-    @Schema(description = "Địa chỉ email", example = "chung@gmail.com")
+    @Schema(description = "Địa chỉ email", example = "customer@example.com")
     private String email;
 
     @Schema(description = "Giới tính", example = "MALE")
     private Gender gender;
 
-    @Schema(description = "Ngày sinh", example = "2002-04-03")
+    @Schema(description = "Ngày sinh", example = "2000-01-01")
     private LocalDate birthday;
 
     @Schema(description = "Đường dẫn ảnh đại diện", example = "https://cdn.bookhub.vn/avatars/user-1001.webp")

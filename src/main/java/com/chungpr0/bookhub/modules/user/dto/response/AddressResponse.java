@@ -20,7 +20,7 @@ public class AddressResponse {
     @Schema(description = "ID địa chỉ", example = "5")
     private Long id;
 
-    @Schema(description = "Tên người nhận", example = "Nguyễn Tiến Chung")
+    @Schema(description = "Tên người nhận", example = "Nguyễn Văn A")
     private String receiverName;
 
     @Schema(description = "Số điện thoại người nhận", example = "0988888888")

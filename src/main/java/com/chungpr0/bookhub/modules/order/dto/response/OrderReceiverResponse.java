@@ -14,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class OrderReceiverResponse {
 
-    @Schema(description = "Họ và tên người nhận hàng", example = "Nguyễn Tiến Chung")
+    @Schema(description = "Họ và tên người nhận hàng", example = "Nguyễn Văn A")
     private String name;
 
     @Schema(description = "Số điện thoại nhận hàng", example = "0988888888")

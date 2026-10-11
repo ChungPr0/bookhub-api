@@ -27,7 +27,6 @@ import com.chungpr0.bookhub.modules.user.entity.Customer;
 import com.chungpr0.bookhub.modules.user.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -57,18 +56,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final CustomerRepository customerRepository;
     private final OrderMapper orderMapper;
-
-    @Value("${bookhub.vnpay.tmn-code:BOOKHUB1}")
-    private String vnpTmnCode;
-
-    @Value("${bookhub.vnpay.hash-secret:RAO4A828SX0Z7G3IUXH44C6SGYCVS9H2}")
-    private String vnpHashSecret;
-
-    @Value("${bookhub.vnpay.pay-url:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}")
-    private String vnpPayUrl;
-
-    @Value("${bookhub.vnpay.return-url:https://bookhub.vn/checkout/result}")
-    private String vnpReturnUrl;
+    private final com.chungpr0.bookhub.modules.order.config.VnpayProperties vnpayProperties;
+    private final com.chungpr0.bookhub.modules.order.config.OrderProperties orderProperties;
 
     @Override
     @Transactional(readOnly = true)
@@ -131,7 +120,7 @@ public class PaymentServiceImpl implements PaymentService {
         OffsetDateTime now = DateTimeUtils.nowVietnam();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         String createDate = now.format(formatter);
-        String expireDate = now.plusMinutes(15).format(formatter);
+        String expireDate = now.plusMinutes(orderProperties.getVnpayTimeoutMinutes()).format(formatter);
 
         long amount = order.getFinalAmount() * 100L; // VNPAY takes amount in xu (x100)
         String txnRef = order.getOrderCode() + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
@@ -139,14 +128,14 @@ public class PaymentServiceImpl implements PaymentService {
         Map<String, String> vnpParams = new HashMap<>();
         vnpParams.put("vnp_Version", "2.1.0");
         vnpParams.put("vnp_Command", "pay");
-        vnpParams.put("vnp_TmnCode", vnpTmnCode);
+        vnpParams.put("vnp_TmnCode", vnpayProperties.getTmnCode());
         vnpParams.put("vnp_Amount", String.valueOf(amount));
         vnpParams.put("vnp_CurrCode", "VND");
         vnpParams.put("vnp_TxnRef", txnRef);
         vnpParams.put("vnp_OrderInfo", "Thanh toan don hang BookHub " + order.getOrderCode());
         vnpParams.put("vnp_OrderType", "other");
         vnpParams.put("vnp_Locale", "vn");
-        vnpParams.put("vnp_ReturnUrl", vnpReturnUrl);
+        vnpParams.put("vnp_ReturnUrl", vnpayProperties.getReturnUrl());
         vnpParams.put("vnp_IpAddr", clientIp);
         vnpParams.put("vnp_CreateDate", createDate);
         vnpParams.put("vnp_ExpireDate", expireDate);
@@ -178,10 +167,10 @@ public class PaymentServiceImpl implements PaymentService {
             }
         }
 
-        String secureHash = hmacSHA512(vnpHashSecret, hashData.toString());
+        String secureHash = hmacSHA512(vnpayProperties.getHashSecret(), hashData.toString());
         query.append("&vnp_SecureHash=").append(secureHash);
 
-        return vnpPayUrl + "?" + query;
+        return vnpayProperties.getPayUrl() + "?" + query;
     }
 
     @Override
@@ -359,7 +348,7 @@ public class PaymentServiceImpl implements PaymentService {
             }
         }
 
-        String actualHash = hmacSHA512(vnpHashSecret, hashData.toString());
+        String actualHash = hmacSHA512(vnpayProperties.getHashSecret(), hashData.toString());
         return actualHash.equalsIgnoreCase(vnpSecureHash);
     }
 

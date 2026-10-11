@@ -38,5 +38,6 @@ build/
 # Local Environment & Secrets
 .env
 .env.*
+!.env.example
 *-local.yaml
 application-local.yaml

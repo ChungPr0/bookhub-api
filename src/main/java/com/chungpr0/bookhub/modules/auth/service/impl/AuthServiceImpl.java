@@ -164,9 +164,10 @@ public class AuthServiceImpl implements AuthService {
 
         if (account.getLoginLockedUntil() != null && account.getLoginLockedUntil().isAfter(now)) {
             long retryAfter = Duration.between(now, account.getLoginLockedUntil()).toSeconds();
+            long lockMinutes = Math.max(1, (jwtProperties.getLoginLockDurationSeconds() + 59) / 60);
             throw new AppException(
                     ErrorCode.ACCOUNT_TEMPORARILY_LOCKED,
-                    "Tài khoản tạm thời bị khóa do nhập sai mật khẩu nhiều lần. Vui lòng thử lại sau 15 phút",
+                    String.format("Tài khoản tạm thời bị khóa do nhập sai mật khẩu nhiều lần. Vui lòng thử lại sau %d phút", lockMinutes),
                     Map.of(
                             "lockedUntil", DateTimeUtils.format(account.getLoginLockedUntil()),
                             "retryAfterSeconds", retryAfter
@@ -182,9 +183,10 @@ public class AuthServiceImpl implements AuthService {
                 accountRepository.save(account);
 
                 long retryAfter = jwtProperties.getLoginLockDurationSeconds();
+                long lockMinutes = Math.max(1, (jwtProperties.getLoginLockDurationSeconds() + 59) / 60);
                 throw new AppException(
                         ErrorCode.ACCOUNT_TEMPORARILY_LOCKED,
-                        "Tài khoản tạm thời bị khóa do nhập sai mật khẩu nhiều lần. Vui lòng thử lại sau 15 phút",
+                        String.format("Tài khoản tạm thời bị khóa do nhập sai mật khẩu nhiều lần. Vui lòng thử lại sau %d phút", lockMinutes),
                         Map.of(
                                 "lockedUntil", DateTimeUtils.format(account.getLoginLockedUntil()),
                                 "retryAfterSeconds", retryAfter

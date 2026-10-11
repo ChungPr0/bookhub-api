@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.OffsetDateTime;
@@ -38,6 +39,9 @@ class CustomerAddressServiceTest {
 
     @Mock
     private CustomerRepository customerRepository;
+
+    @Spy
+    private com.chungpr0.bookhub.modules.user.config.UserProperties userProperties = new com.chungpr0.bookhub.modules.user.config.UserProperties();
 
     @InjectMocks
     private CustomerAddressServiceImpl customerAddressService;

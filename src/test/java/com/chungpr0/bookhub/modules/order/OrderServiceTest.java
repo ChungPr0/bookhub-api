@@ -111,6 +111,9 @@ class OrderServiceTest {
     @Spy
     private OrderMapper orderMapper = new OrderMapper();
 
+    @Spy
+    private com.chungpr0.bookhub.modules.order.config.OrderProperties orderProperties = new com.chungpr0.bookhub.modules.order.config.OrderProperties();
+
     @InjectMocks
     private OrderServiceImpl orderService;
 

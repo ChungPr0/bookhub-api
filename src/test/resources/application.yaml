@@ -30,3 +30,21 @@ bookhub:
     login-max-attempts: 5
     login-lock-duration-seconds: 900
 
+  vnpay:
+    tmn-code: BOOKHUB
+    hash-secret: test_hash_secret
+    pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    return-url: https://example.com/checkout/result
+
+  order:
+    vnpay-timeout-minutes: 15
+    bank-transfer-timeout-hours: 48
+
+  user:
+    max-addresses: 10
+
+  media:
+    max-file-size-mb: 5
+    max-batch-files: 10
+    cdn-base-url: https://cdn.bookhub.vn
+

@@ -31,7 +31,7 @@ public class VoucherUsageResponse {
     @Schema(description = "ID khách hàng", example = "1001")
     private Long customerId;
 
-    @Schema(description = "Tên khách hàng", example = "Nguyễn Tiến Chung")
+    @Schema(description = "Tên khách hàng", example = "Nguyễn Văn A")
     private String customerName;
 
     @Schema(description = "Số tiền đã giảm (VND)", example = "10000")

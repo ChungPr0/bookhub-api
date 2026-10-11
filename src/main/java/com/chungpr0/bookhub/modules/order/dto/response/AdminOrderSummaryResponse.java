@@ -28,7 +28,7 @@ public class AdminOrderSummaryResponse {
     @Schema(description = "Thông tin khách hàng đặt đơn")
     private OrderCustomerInfoResponse customer;
 
-    @Schema(description = "Tên người nhận hàng", example = "Nguyễn Tiến Chung")
+    @Schema(description = "Tên người nhận hàng", example = "Nguyễn Văn A")
     private String receiverName;
 
     @Schema(description = "Số điện thoại người nhận", example = "0988888888")

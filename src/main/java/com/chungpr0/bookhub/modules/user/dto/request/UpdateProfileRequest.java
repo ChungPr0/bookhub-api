@@ -24,12 +24,12 @@ public class UpdateProfileRequest {
 
     @NotBlank(message = "Họ và tên không được để trống")
     @Size(min = 2, max = 100, message = "Họ và tên phải từ 2 đến 100 ký tự")
-    @Schema(description = "Họ và tên khách hàng", example = "Nguyễn Tiến Chung")
+    @Schema(description = "Họ và tên khách hàng", example = "Nguyễn Văn A")
     private String fullName;
 
     @Email(message = "Email không đúng định dạng RFC 5322")
     @Size(max = 150, message = "Email tối đa 150 ký tự")
-    @Schema(description = "Địa chỉ email (truyền null hoặc rỗng để xóa)", example = "tienchung.dev@gmail.com")
+    @Schema(description = "Địa chỉ email (truyền null hoặc rỗng để xóa)", example = "user@example.com")
     private String email;
 
     @NotNull(message = "Giới tính không được để trống")
@@ -37,7 +37,7 @@ public class UpdateProfileRequest {
     private Gender gender;
 
     @Past(message = "Ngày sinh phải trước ngày hôm nay")
-    @Schema(description = "Ngày sinh định dạng YYYY-MM-DD", example = "2002-04-03")
+    @Schema(description = "Ngày sinh định dạng YYYY-MM-DD", example = "2000-01-01")
     private LocalDate birthday;
 
     @Size(max = 500, message = "Đường dẫn ảnh đại diện tối đa 500 ký tự")

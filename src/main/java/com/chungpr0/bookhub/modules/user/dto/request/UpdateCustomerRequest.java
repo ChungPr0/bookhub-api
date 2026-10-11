@@ -24,12 +24,12 @@ public class UpdateCustomerRequest {
 
     @NotBlank(message = "Họ tên không được để trống")
     @Size(max = 100, message = "Họ tên tối đa 100 ký tự")
-    @Schema(description = "Họ và tên khách hàng", example = "Nguyễn Tiến Chung")
+    @Schema(description = "Họ và tên khách hàng", example = "Nguyễn Văn A")
     private String fullName;
 
     @Email(message = "Email không đúng định dạng")
     @Size(max = 150, message = "Email tối đa 150 ký tự")
-    @Schema(description = "Địa chỉ email", example = "tienchung.dev@gmail.com")
+    @Schema(description = "Địa chỉ email", example = "customer@example.com")
     private String email;
 
     @NotNull(message = "Giới tính không được để trống")
@@ -37,7 +37,7 @@ public class UpdateCustomerRequest {
     private Gender gender;
 
     @Past(message = "Ngày sinh phải là ngày trong quá khứ")
-    @Schema(description = "Ngày sinh", example = "2002-04-03")
+    @Schema(description = "Ngày sinh", example = "2000-01-01")
     private LocalDate birthday;
 }
 

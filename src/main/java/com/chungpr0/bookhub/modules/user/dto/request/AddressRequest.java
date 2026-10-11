@@ -19,7 +19,7 @@ public class AddressRequest {
 
     @NotBlank(message = "Tên người nhận không được để trống")
     @Size(min = 2, max = 100, message = "Tên người nhận phải từ 2 đến 100 ký tự")
-    @Schema(description = "Tên người nhận hàng", example = "Nguyễn Tiến Chung")
+    @Schema(description = "Tên người nhận hàng", example = "Nguyễn Văn A")
     private String receiverName;
 
     @NotBlank(message = "Số điện thoại nhận hàng không được để trống")

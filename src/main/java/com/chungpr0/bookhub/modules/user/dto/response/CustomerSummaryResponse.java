@@ -25,7 +25,7 @@ public class CustomerSummaryResponse {
     @Schema(description = "ID tài khoản liên kết", example = "2001")
     private Long accountId;
 
-    @Schema(description = "Họ và tên khách hàng", example = "Nguyễn Tiến Chung")
+    @Schema(description = "Họ và tên khách hàng", example = "Nguyễn Văn A")
     private String fullName;
 
     @Schema(description = "Số điện thoại đăng ký", example = "0988888888")
