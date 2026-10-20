@@ -8,15 +8,19 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class OpenApiConfig {
 
     public static final String SECURITY_SCHEME_NAME = "BearerAuth";
+
+    private final CorsProperties corsProperties;
 
     @Bean
     public OpenAPI bookHubOpenAPI() {
@@ -32,7 +36,7 @@ public class OpenApiConfig {
                                 .email("contact@bookhub.com"))
                         .license(new License().name("Apache 2.0").url("https://springdoc.org")))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Local Development Server")
+                        new Server().url(corsProperties.getBackendUrl()).description("API Server")
                 ))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
@@ -45,4 +49,5 @@ public class OpenApiConfig {
                                         "Lưu ý: Không cần nhập tiền tố 'Bearer ', hệ thống sẽ tự động thêm vào HTTP header.")));
     }
 }
+
 

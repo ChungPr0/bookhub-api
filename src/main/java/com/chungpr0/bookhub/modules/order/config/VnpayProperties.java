@@ -27,6 +27,6 @@ public class VnpayProperties {
     /**
      * VNPay return URL after payment.
      */
-    private String returnUrl = "https://your-domain.com/checkout/result";
+    private String returnUrl = "http://localhost:3000/checkout/result";
 }
 

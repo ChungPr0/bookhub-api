@@ -1,9 +1,12 @@
 server:
   port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
 
 spring:
   application:
     name: bookhub-api
+  config:
+    import: optional:file:.env[.properties]
 
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/bookhub?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Ho_Chi_Minh}
@@ -34,11 +37,15 @@ bookhub:
     login-max-attempts: ${LOGIN_MAX_ATTEMPTS:5}
     login-lock-duration-seconds: ${LOGIN_LOCK_DURATION:900}
 
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+    backend-url: ${BACKEND_URL:http://localhost:8080}
+
   vnpay:
     tmn-code: ${VNPAY_TMN_CODE:BOOKHUB}
     hash-secret: ${VNPAY_HASH_SECRET:}
     pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
-    return-url: ${VNPAY_RETURN_URL:https://your-domain.com/checkout/result}
+    return-url: ${VNPAY_RETURN_URL:http://localhost:3000/checkout/result}
 
   order:
     vnpay-timeout-minutes: ${ORDER_VNPAY_TIMEOUT_MINUTES:15}
